@@ -1,8 +1,9 @@
 import React, { useState, useMemo } from 'react';
+import Pagination from './Pagination';
 
 /**
  * RecordTable component for displaying records in a structured, responsive table.
- * Supports case-insensitive client-side search across record fields.
+ * Supports case-insensitive client-side search across record fields and pagination.
  * 
  * Props:
  * - records: Array of record objects ({ id, title, description, created_at, user_id })
@@ -11,6 +12,8 @@ import React, { useState, useMemo } from 'react';
  * - emptyMessage: Optional custom empty state message
  * - externalSearchQuery: Optional controlled search string from parent
  * - onSearchChange: Optional callback when search string changes
+ * - pageSize: Number of records displayed per page (default: 5)
+ * - showPagination: Boolean to toggle pagination controls (default: true)
  */
 export default function RecordTable({
   records = [],
@@ -19,8 +22,11 @@ export default function RecordTable({
   emptyMessage = 'No records available.',
   externalSearchQuery,
   onSearchChange,
+  pageSize = 5,
+  showPagination = true,
 }) {
   const [internalSearchQuery, setInternalSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
 
   // Support controlled or uncontrolled search
   const isControlledSearch = typeof externalSearchQuery === 'string';
@@ -30,6 +36,7 @@ export default function RecordTable({
     if (!isControlledSearch) {
       setInternalSearchQuery(value);
     }
+    setCurrentPage(1); // Reset to first page when search criteria change
     if (onSearchChange) {
       onSearchChange(value);
     }
@@ -71,9 +78,19 @@ export default function RecordTable({
   }, [records, searchQuery]);
 
   const originalRecords = Array.isArray(records) ? records : [];
-
   const showActions = Boolean(onEdit || onDelete);
   const isSearching = searchQuery.trim().length > 0;
+
+  // Pagination calculation
+  const totalItems = filteredRecords.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+  const safeCurrentPage = Math.min(Math.max(1, currentPage), totalPages);
+
+  const paginatedRecords = useMemo(() => {
+    if (!showPagination) return filteredRecords;
+    const startIndex = (safeCurrentPage - 1) * pageSize;
+    return filteredRecords.slice(startIndex, startIndex + pageSize);
+  }, [filteredRecords, showPagination, safeCurrentPage, pageSize]);
 
   return (
     <div className="w-full bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
@@ -208,8 +225,8 @@ export default function RecordTable({
                 </td>
               </tr>
             ) : (
-              /* Filtered records display */
-              filteredRecords.map((record, index) => {
+              /* Paginated filtered records display */
+              paginatedRecords.map((record, index) => {
                 const rowKey = record.id ?? `record-${index}`;
                 return (
                   <tr
@@ -264,6 +281,17 @@ export default function RecordTable({
           </tbody>
         </table>
       </div>
+
+      {/* Pagination Footer */}
+      {showPagination && filteredRecords.length > 0 && (
+        <Pagination
+          currentPage={safeCurrentPage}
+          totalPages={totalPages}
+          totalItems={totalItems}
+          pageSize={pageSize}
+          onPageChange={(page) => setCurrentPage(page)}
+        />
+      )}
     </div>
   );
 }
