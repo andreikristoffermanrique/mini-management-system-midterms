@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Login from './pages/Login';
+import Register from './pages/Register';
 
 function App() {
   const [user, setUser] = useState(() => {
@@ -25,7 +26,7 @@ function App() {
             <Route path="/dashboard" element={<h2 className="text-2xl font-bold">Dashboard</h2>} />
             <Route path="/records" element={<h2 className="text-2xl font-bold">Records Management</h2>} />
             <Route path="/login" element={<Login setUser={setUser} />} />
-            <Route path="/register" element={<h2 className="text-2xl font-bold">Register Page</h2>} />
+            <Route path="/register" element={<Register />} />
           </Routes>
         </main>
       </div>
