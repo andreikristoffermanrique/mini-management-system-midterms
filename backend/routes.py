@@ -39,3 +39,21 @@ def update_record(record_id):
     db.commit()
     return success_response("Record updated successfully")
 # -------------------------------------
+
+@records_bp.route('/<int:record_id>', methods=['DELETE'])
+@token_required
+def delete_record(record_id):
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute("SELECT * FROM records WHERE id = ?", (record_id,))
+    record = cursor.fetchone()
+    
+    if not record:
+        return error_response("Record not found", status=404)
+        
+    if record['user_id'] != g.current_user['id'] and g.current_user.get('role') != 'admin':
+        return error_response("Unauthorized", status=403)
+        
+    cursor.execute("DELETE FROM records WHERE id = ?", (record_id,))
+    db.commit()
+    return success_response("Record deleted successfully")
