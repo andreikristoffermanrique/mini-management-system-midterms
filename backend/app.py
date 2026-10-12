@@ -37,5 +37,17 @@ def internal_server_error(e):
     return error_response("Internal server error", status=500)
 # --------------------------------------
 
+
+# ---- LOGGING (Developer 4) ----
+import logging
+logging.basicConfig(level=logging.INFO)
+from flask import request
+
+@app.after_request
+def log_request(response):
+    app.logger.info(f"{request.method} {request.path} - {response.status_code}")
+    return response
+# -------------------------------
+
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
