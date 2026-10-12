@@ -16,5 +16,26 @@ def health_check():
         "data": {}
     }), 200
 
+
+# ---- ERROR HANDLERS (Developer 4) ----
+from utils import error_response
+
+@app.errorhandler(400)
+def bad_request(e):
+    return error_response(str(e.description) if e.description else "Bad Request", status=400)
+
+@app.errorhandler(401)
+def unauthorized(e):
+    return error_response("Unauthorized", status=401)
+
+@app.errorhandler(404)
+def not_found(e):
+    return error_response("Resource not found", status=404)
+
+@app.errorhandler(500)
+def internal_server_error(e):
+    return error_response("Internal server error", status=500)
+# --------------------------------------
+
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
