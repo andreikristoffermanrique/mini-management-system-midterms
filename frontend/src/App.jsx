@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
+import Login from './pages/Login';
 
 function App() {
   const [user, setUser] = useState(() => {
@@ -23,7 +24,7 @@ function App() {
             <Route path="/" element={<h2 className="text-2xl font-bold">Home Page</h2>} />
             <Route path="/dashboard" element={<h2 className="text-2xl font-bold">Dashboard</h2>} />
             <Route path="/records" element={<h2 className="text-2xl font-bold">Records Management</h2>} />
-            <Route path="/login" element={<h2 className="text-2xl font-bold">Login Page</h2>} />
+            <Route path="/login" element={<Login setUser={setUser} />} />
             <Route path="/register" element={<h2 className="text-2xl font-bold">Register Page</h2>} />
           </Routes>
         </main>
