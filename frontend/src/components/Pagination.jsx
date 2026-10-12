@@ -47,62 +47,70 @@ export default function Pagination({
   const pages = getPageNumbers();
 
   return (
-    <div className="px-4 py-3 bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm">
-      {/* Information */}
-      <div className="text-slate-600 text-xs sm:text-sm">
-        Showing <span className="font-semibold text-slate-800">{startIndex}</span> to{' '}
-        <span className="font-semibold text-slate-800">{endIndex}</span> of{' '}
-        <span className="font-semibold text-slate-800">{totalItems}</span> records
+    <div className="px-5 py-3.5 bg-slate-50/70 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm">
+      {/* Information text */}
+      <div className="text-slate-600 text-xs sm:text-sm flex items-center flex-wrap gap-1.5">
+        <span>
+          Showing <span className="font-semibold text-slate-800">{startIndex}</span>–<span className="font-semibold text-slate-800">{endIndex}</span> of <span className="font-semibold text-slate-800">{totalItems}</span> records
+        </span>
         {totalPages > 1 && (
-          <span className="text-slate-400 ml-1.5 font-normal">
-            (Page {currentPage} of {totalPages})
+          <span className="px-2 py-0.5 text-xs bg-slate-200/70 text-slate-700 rounded-md font-medium">
+            Page {currentPage} of {totalPages}
           </span>
         )}
       </div>
 
       {/* Page controls */}
       {totalPages > 1 && (
-        <div className="inline-flex items-center -space-x-px rounded-md shadow-sm">
+        <div className="flex items-center space-x-1">
           {/* Previous Button */}
           <button
             type="button"
             onClick={() => onPageChange && onPageChange(currentPage - 1)}
             disabled={currentPage <= 1}
-            className="px-3 py-1.5 text-xs font-medium text-slate-700 bg-white border border-slate-300 rounded-l-md hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition"
+            className="inline-flex items-center px-2.5 py-1.5 text-xs font-medium text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition shadow-sm"
             aria-label="Previous page"
           >
-            Previous
+            <svg className="w-3.5 h-3.5 mr-1 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
+            </svg>
+            Prev
           </button>
 
           {/* Page numbers */}
-          {pages.map((p) => {
-            const isActive = p === currentPage;
-            return (
-              <button
-                key={p}
-                type="button"
-                onClick={() => onPageChange && onPageChange(p)}
-                className={`px-3 py-1.5 text-xs font-medium border border-slate-300 transition ${
-                  isActive
-                    ? 'z-10 bg-indigo-600 text-white border-indigo-600 font-semibold'
-                    : 'bg-white text-slate-700 hover:bg-slate-50'
-                }`}
-                aria-current={isActive ? 'page' : undefined}
-              >
-                {p}
-              </button>
-            );
-          })}
+          <div className="flex items-center space-x-1">
+            {pages.map((p) => {
+              const isActive = p === currentPage;
+              return (
+                <button
+                  key={p}
+                  type="button"
+                  onClick={() => onPageChange && onPageChange(p)}
+                  className={`min-w-[32px] h-8 px-2 text-xs font-medium rounded-lg transition ${
+                    isActive
+                      ? 'bg-indigo-600 text-white font-semibold shadow-sm'
+                      : 'text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 shadow-sm'
+                  }`}
+                  aria-current={isActive ? 'page' : undefined}
+                >
+                  {p}
+                </button>
+              );
+            })}
+          </div>
 
           {/* Next Button */}
           <button
             type="button"
             onClick={() => onPageChange && onPageChange(currentPage + 1)}
             disabled={currentPage >= totalPages}
-            className="px-3 py-1.5 text-xs font-medium text-slate-700 bg-white border border-slate-300 rounded-r-md hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition"
+            className="inline-flex items-center px-2.5 py-1.5 text-xs font-medium text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition shadow-sm"
             aria-label="Next page"
           >
             Next
+            <svg className="w-3.5 h-3.5 ml-1 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+            </svg>
           </button>
         </div>
       )}
