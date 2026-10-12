@@ -31,3 +31,34 @@ def validate_fields(required_fields):
             return f(*args, **kwargs)
         return decorated_function
     return decorator
+
+import jwt
+from flask import current_app, g
+
+def token_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = None
+        auth_header = request.headers.get("Authorization")
+        if auth_header and auth_header.startswith("Bearer "):
+            token = auth_header.split(" ")[1]
+        if not token:
+            return error_response("Token is missing", status=401)
+        try:
+            # Using a fallback dev secret if config isn't set yet
+            secret = current_app.config.get("SECRET_KEY", "dev_secret")
+            data = jwt.decode(token, secret, algorithms=["HS256"])
+            g.current_user = data
+        except Exception as e:
+            return error_response("Token is invalid", status=401)
+        return f(*args, **kwargs)
+    return decorated
+
+def admin_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        user = getattr(g, 'current_user', {})
+        if user.get('role') != 'admin':
+            return error_response("Admin access required", status=403)
+        return f(*args, **kwargs)
+    return decorated
