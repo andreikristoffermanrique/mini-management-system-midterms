@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import Dashboard from './pages/Dashboard';
 
 function App() {
   const [user, setUser] = useState(() => {
@@ -23,7 +24,7 @@ function App() {
         <main className="max-w-7xl mx-auto p-6">
           <Routes>
             <Route path="/" element={<h2 className="text-2xl font-bold">Home Page</h2>} />
-            <Route path="/dashboard" element={<h2 className="text-2xl font-bold">Dashboard</h2>} />
+            <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/records" element={<h2 className="text-2xl font-bold">Records Management</h2>} />
             <Route path="/login" element={<Login setUser={setUser} />} />
             <Route path="/register" element={<Register />} />
