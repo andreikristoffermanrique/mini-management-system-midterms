@@ -1,9 +1,10 @@
 import React, { useState, useMemo } from 'react';
 import Pagination from './Pagination';
+import LoadingSpinner from './LoadingSpinner';
 
 /**
  * RecordTable component for displaying records in a structured, responsive table.
- * Supports case-insensitive client-side search across record fields and pagination.
+ * Supports case-insensitive client-side search, pagination, loading states, and error handling.
  * 
  * Props:
  * - records: Array of record objects ({ id, title, description, created_at, user_id })
@@ -14,6 +15,10 @@ import Pagination from './Pagination';
  * - onSearchChange: Optional callback when search string changes
  * - pageSize: Number of records displayed per page (default: 5)
  * - showPagination: Boolean to toggle pagination controls (default: true)
+ * - isLoading: Boolean indicating data fetching state (default: false)
+ * - loadingMessage: String displayed during loading state (default: 'Loading records...')
+ * - error: String or Error object for displaying fetch failure (default: null)
+ * - onRetry: Optional callback when user clicks retry after error
  */
 export default function RecordTable({
   records = [],
@@ -24,6 +29,10 @@ export default function RecordTable({
   onSearchChange,
   pageSize = 5,
   showPagination = true,
+  isLoading = false,
+  loadingMessage = 'Loading records...',
+  error = null,
+  onRetry,
 }) {
   const [internalSearchQuery, setInternalSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
@@ -80,6 +89,7 @@ export default function RecordTable({
   const originalRecords = Array.isArray(records) ? records : [];
   const showActions = Boolean(onEdit || onDelete);
   const isSearching = searchQuery.trim().length > 0;
+  const errorMessage = error instanceof Error ? error.message : (typeof error === 'string' ? error : null);
 
   // Pagination calculation
   const totalItems = filteredRecords.length;
@@ -106,10 +116,11 @@ export default function RecordTable({
             type="text"
             value={searchQuery}
             onChange={(e) => handleSearchChange(e.target.value)}
+            disabled={isLoading}
             placeholder="Search records by title, description, or ID..."
-            className="w-full pl-9 pr-8 py-2 text-sm bg-white border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
+            className="w-full pl-9 pr-8 py-2 text-sm bg-white border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition disabled:bg-slate-100 disabled:cursor-not-allowed"
           />
-          {searchQuery && (
+          {searchQuery && !isLoading && (
             <button
               type="button"
               onClick={handleClearSearch}
@@ -122,9 +133,11 @@ export default function RecordTable({
           )}
         </div>
 
-        {/* Counter badge */}
+        {/* Counter badge / loading indicator */}
         <div className="text-xs text-slate-500 flex items-center">
-          {isSearching ? (
+          {isLoading ? (
+            <LoadingSpinner size="sm" message="Fetching..." inline />
+          ) : isSearching ? (
             <span>
               Showing <span className="font-semibold text-slate-700">{filteredRecords.length}</span> of {originalRecords.length} records
             </span>
@@ -161,8 +174,48 @@ export default function RecordTable({
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-200 bg-white">
-            {originalRecords.length === 0 ? (
-              /* No records at all in dataset */
+            {isLoading ? (
+              /* Loading state */
+              <tr>
+                <td
+                  colSpan={showActions ? 5 : 4}
+                  className="px-6 py-12 text-center"
+                >
+                  <LoadingSpinner message={loadingMessage} size="md" />
+                </td>
+              </tr>
+            ) : errorMessage ? (
+              /* Error state */
+              <tr>
+                <td
+                  colSpan={showActions ? 5 : 4}
+                  className="px-6 py-12 text-center text-red-600"
+                >
+                  <div className="flex flex-col items-center justify-center space-y-3">
+                    <svg className="w-10 h-10 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="1.5"
+                        d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
+                    </svg>
+                    <p className="text-base font-semibold text-red-700">Failed to load records</p>
+                    <p className="text-xs text-red-500 max-w-md">{errorMessage}</p>
+                    {onRetry && (
+                      <button
+                        type="button"
+                        onClick={onRetry}
+                        className="mt-2 inline-flex items-center px-3.5 py-1.5 text-xs font-medium rounded text-white bg-red-600 hover:bg-red-500 transition shadow-sm"
+                      >
+                        Try Again
+                      </button>
+                    )}
+                  </div>
+                </td>
+              </tr>
+            ) : originalRecords.length === 0 ? (
+              /* Empty state (no records in dataset) */
               <tr>
                 <td
                   colSpan={showActions ? 5 : 4}
@@ -225,7 +278,7 @@ export default function RecordTable({
                 </td>
               </tr>
             ) : (
-              /* Paginated filtered records display */
+              /* Populated records display */
               paginatedRecords.map((record, index) => {
                 const rowKey = record.id ?? `record-${index}`;
                 return (
@@ -283,7 +336,7 @@ export default function RecordTable({
       </div>
 
       {/* Pagination Footer */}
-      {showPagination && filteredRecords.length > 0 && (
+      {!isLoading && !errorMessage && showPagination && filteredRecords.length > 0 && (
         <Pagination
           currentPage={safeCurrentPage}
           totalPages={totalPages}
