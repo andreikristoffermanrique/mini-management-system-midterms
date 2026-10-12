@@ -32,5 +32,13 @@ def log_request(response):
     return response
 # -------------------------------
 
+
+# ---- REGISTER EXTENDED APIs (Developer 4) ----
+try:
+    from backend.routes import records_bp
+    app.register_blueprint(records_bp)
+except ImportError:
+    pass
+# ----------------------------------------------
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
